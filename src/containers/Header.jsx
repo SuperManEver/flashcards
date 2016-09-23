@@ -1,5 +1,14 @@
+/* ------------------------------------------------------------------------------
+* Header.jsx
+*
+* header component
+*
+* Nick Luparev nikita.luparev@gmail.com
+------------------------------------------------------------------------------- */
 import React from 'react';
 import Modal from 'boron/ScaleModal';
+import {connect} from 'react-redux';
+import createCard from '../actions/cardActions.js';
 
 const Header = React.createClass({
   getInitialState() {
@@ -22,8 +31,11 @@ const Header = React.createClass({
   },
 
   createNewCard () {
-    let { front, back } = this.state;
-    console.log(front + " " + back);
+    let {front, back} = this.state;
+    let {createCard} = this.props;
+
+    createCard({ front : front, back : back });
+
     this.hideModal();
   },
 
@@ -81,4 +93,10 @@ const Header = React.createClass({
   }  
 });
 
-export default Header;
+function mapDispatchToProps(dispatch) {
+  return {
+    createCard : (data) => dispatch(createCard( data ))
+  };
+};
+
+export default connect(null, mapDispatchToProps)(Header);
