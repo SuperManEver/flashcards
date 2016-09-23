@@ -366,3 +366,23 @@ html {
 html {
   width: 100%;
   height: 100%; }
+
+body {
+  padding-top: 50px; }
+
+.navbar-nav {
+  display: inline-block;
+  padding-top: 14px; }
+
+.new-card-modal {
+  padding: 20px; }
+  .new-card-modal label {
+    color: DimGrey;
+    font-weight: normal; }
+  .new-card-modal textarea {
+    width: 100%;
+    border-color: gainsBoro;
+    margin-bottom: 16px;
+    font-size: 12px; }
+  .new-card-modal .btn-primary {
+    margin-left: 10px; }

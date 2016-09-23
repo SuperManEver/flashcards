@@ -1,0 +1,19 @@
+.new-card-modal {
+  padding : 20px;
+
+  label {
+    color : DimGrey;
+    font-weight : normal;
+  }
+
+  textarea {
+    width : 100%;
+    border-color: gainsBoro;
+    margin-bottom : 16px;
+    font-size : 12px;
+  }
+
+  .btn-primary {
+    margin-left: 10px;
+  }
+}
