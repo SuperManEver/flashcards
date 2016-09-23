@@ -12,16 +12,26 @@ import { render } from 'react-dom';
 import configureStore from './store/configureStore.js';
 import {Provider} from 'react-redux';
 
+// components
 import Header from './containers/Header.jsx';
+import CardList from './containers/CardList.jsx';
 
-const store = configureStore();
+const cards = [
+  { front : 'hello world', back : 'wassaby' },
+  { front : 'hello world', back : 'wassaby' },
+  { front : 'hello world', back : 'wassaby' },
+  { front : 'hello world', back : 'wassaby' },
+  { front : 'hello world', back : 'wassaby' }
+];
+
+const store = configureStore({ cards :  cards });
 
 var App = React.createClass({
   render () {
     return <Provider store={store}>
       <div className="container">
         <Header />
-        <h2>Hello World</h2>
+        <CardList />
       </div>
     </Provider>;
   }  

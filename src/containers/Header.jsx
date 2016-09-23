@@ -25,9 +25,16 @@ const Header = React.createClass({
   hideModal () {
     this.refs.modal.hide();
   },
-
+  /*
   componentDidMount() {
     this.refs.modal.show();
+  },
+  */
+  clearInputFields () {
+    this.setState({
+      front : '',
+      back  : ''
+    });
   },
 
   createNewCard () {
@@ -36,6 +43,7 @@ const Header = React.createClass({
 
     createCard({ front : front, back : back });
 
+    this.clearInputFields();
     this.hideModal();
   },
 
@@ -79,7 +87,7 @@ const Header = React.createClass({
             <h2>New Card</h2>
 
             <label htmlFor="front">Card Front</label>
-            <textarea value={this.state.front} onChange={this.updateFront} id="front" rows="4" cols="55"></textarea>
+            <textarea autoFocus={true} value={this.state.front} onChange={this.updateFront} id="front" rows="4" cols="55"></textarea>
 
             <label htmlFor="back">Card Front</label>
             <textarea value={this.state.back} onChange={this.updateBack} id="back" rows="4" cols="55"></textarea>

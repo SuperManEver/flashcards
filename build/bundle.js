@@ -62,9 +62,14 @@
 
 	var _Header2 = _interopRequireDefault(_Header);
 
+	var _CardList = __webpack_require__(213);
+
+	var _CardList2 = _interopRequireDefault(_CardList);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var store = (0, _configureStore2.default)();
+	// components
+
 
 	// store related
 	/* ------------------------------------------------------------------------------
@@ -74,7 +79,9 @@
 	*
 	* Nick Luparev nikita.luparev@gmail.com
 	------------------------------------------------------------------------------- */
+	var cards = [{ front: 'hello world', back: 'wassaby' }, { front: 'hello world', back: 'wassaby' }, { front: 'hello world', back: 'wassaby' }, { front: 'hello world', back: 'wassaby' }, { front: 'hello world', back: 'wassaby' }];
 
+	var store = (0, _configureStore2.default)({ cards: cards });
 
 	var App = _react2.default.createClass({
 	  displayName: 'App',
@@ -86,11 +93,7 @@
 	        'div',
 	        { className: 'container' },
 	        _react2.default.createElement(_Header2.default, null),
-	        _react2.default.createElement(
-	          'h2',
-	          null,
-	          'Hello World'
-	        )
+	        _react2.default.createElement(_CardList2.default, null)
 	      )
 	    );
 	  }
@@ -22410,7 +22413,8 @@
 	  switch (action.type) {
 	    case 'CREATE_CARD':
 	      console.log('new card is created ' + action.data.front + " " + action.data.back);
-	      return state;
+	      var newCard = Object.assign({}, action.data);
+	      return state.concat([newCard]);
 	    default:
 	      return state;
 	  }
@@ -23370,8 +23374,17 @@
 	  hideModal: function hideModal() {
 	    this.refs.modal.hide();
 	  },
-	  componentDidMount: function componentDidMount() {
+
+	  /*
+	  componentDidMount() {
 	    this.refs.modal.show();
+	  },
+	  */
+	  clearInputFields: function clearInputFields() {
+	    this.setState({
+	      front: '',
+	      back: ''
+	    });
 	  },
 	  createNewCard: function createNewCard() {
 	    var _state = this.state;
@@ -23382,6 +23395,7 @@
 
 	    createCard({ front: front, back: back });
 
+	    this.clearInputFields();
 	    this.hideModal();
 	  },
 	  updateFront: function updateFront(evt) {
@@ -23458,7 +23472,7 @@
 	            { htmlFor: 'front' },
 	            'Card Front'
 	          ),
-	          _react2.default.createElement('textarea', { value: this.state.front, onChange: this.updateFront, id: 'front', rows: '4', cols: '55' }),
+	          _react2.default.createElement('textarea', { autoFocus: true, value: this.state.front, onChange: this.updateFront, id: 'front', rows: '4', cols: '55' }),
 	          _react2.default.createElement(
 	            'label',
 	            { htmlFor: 'back' },
@@ -24064,6 +24078,62 @@
 	};
 
 	exports.default = createCard;
+
+/***/ },
+/* 213 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactRedux = __webpack_require__(194);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var Card = function Card(_ref) {
+	  var card = _ref.card;
+
+	  return _react2.default.createElement(
+	    'div',
+	    { className: 'col-sm-4 card-item' },
+	    _react2.default.createElement(
+	      'p',
+	      null,
+	      card.front
+	    )
+	  );
+	};
+
+	var CardList = _react2.default.createClass({
+	  displayName: 'CardList',
+	  render: function render() {
+	    var cards = this.props.cards;
+
+	    var allCards = cards.map(function (card) {
+	      return _react2.default.createElement(Card, { card: card });
+	    });
+	    return _react2.default.createElement(
+	      'div',
+	      { className: 'cards-container' },
+	      allCards
+	    );
+	  }
+	});
+
+	function mapStateToProps(state, ownProps) {
+	  return {
+	    cards: state.cards
+	  };
+	}
+
+	exports.default = (0, _reactRedux.connect)(mapStateToProps)(CardList);
 
 /***/ }
 /******/ ]);
