@@ -25,11 +25,7 @@ const Header = React.createClass({
   hideModal () {
     this.refs.modal.hide();
   },
-  /*
-  componentDidMount() {
-    this.refs.modal.show();
-  },
-  */
+
   clearInputFields () {
     this.setState({
       front : '',

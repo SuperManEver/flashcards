@@ -22660,14 +22660,14 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var cardReducer = function cardReducer() {
-	  var state = arguments.length <= 0 || arguments[0] === undefined ? { cards: [] } : arguments[0];
+	  var state = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
 	  var action = arguments[1];
 
 	  switch (action.type) {
 	    case 'CREATE_CARD':
 	      // console.log('new card is created ' + action.data.front + " " + action.data.back);
 	      var newCard = Object.assign({}, { id: _uuid2.default.v4() }, action.data);
-	      return state.cards.concat([newCard]);
+	      return state.concat([newCard]);
 
 	    case 'EDIT_CARD':
 	      // find can that will be edited
@@ -31528,15 +31528,24 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	/* ------------------------------------------------------------------------------
+	* editModalReducer.js
+	*
+	* Reducer for modal window for editing cards
+	*
+	* Nick Luparev nikita.luparev@gmail.com
+	------------------------------------------------------------------------------- */
 	var editModalReducer = function editModalReducer() {
-	  var state = arguments.length <= 0 || arguments[0] === undefined ? { isEditModalOpen: false } : arguments[0];
+	  var state = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 	  var action = arguments[1];
 
 	  switch (action.type) {
 	    case 'OPEN_EDIT_MODAL':
-	      console.log('open modal');
-	      // return state;
-	      return Object.assign({}, { isEditModalOpen: true });
+	      return true;
+
+	    case 'CLOSE_EDIT_MODAL':
+	      console.log('close modal');
+	      return false;
 
 	    default:
 	      return state;
@@ -32495,12 +32504,6 @@
 	  hideModal: function hideModal() {
 	    this.refs.modal.hide();
 	  },
-
-	  /*
-	  componentDidMount() {
-	    this.refs.modal.show();
-	  },
-	  */
 	  clearInputFields: function clearInputFields() {
 	    this.setState({
 	      front: '',
@@ -33320,6 +33323,10 @@
 	  return { type: 'OPEN_EDIT_MODAL', data: id };
 	};
 
+	actions.closeModal = function () {
+	  return { type: 'CLOSE_EDIT_MODAL' };
+	};
+
 	module.exports = actions;
 
 /***/ },
@@ -33342,17 +33349,19 @@
 
 	var _reactRedux = __webpack_require__(198);
 
+	var _editModalActions = __webpack_require__(219);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var EditModal = _react2.default.createClass({
 	  displayName: 'EditModal',
-	  componentDidMount: function componentDidMount() {
-	    var isEditModalOpen = this.props.isEditModalOpen;
-
-	    if (isEditModalOpen) this.refs.modal.show();
-	  },
 	  hideModal: function hideModal() {
+	    this.props.closeModal();
 	    this.refs.modal.hide();
+	  },
+	  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
+	    // console.log(nextProps);
+	    if (nextProps.edit_modal) this.refs.modal.show();else this.refs.modal.hide();
 	  },
 	  render: function render() {
 	    return _react2.default.createElement(
@@ -33378,12 +33387,16 @@
 
 	function mapStateToProps(state, ownProps) {
 	  return {
-	    isEditModalOpen: state.edit_modal
+	    edit_modal: state.edit_modal
 	  };
 	}
 
 	function mapDispatchToProps(dispatch) {
-	  return {};
+	  return {
+	    closeModal: function closeModal() {
+	      return dispatch((0, _editModalActions.closeModal)());
+	    }
+	  };
 	}
 
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(EditModal);

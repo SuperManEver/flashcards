@@ -1,12 +1,12 @@
 import uuid from 'uuid';
 import R from 'ramda';
 
-const cardReducer = (state = { cards : [] }, action) => {
+const cardReducer = (state = [], action) => {
   switch (action.type) {
     case 'CREATE_CARD':
       // console.log('new card is created ' + action.data.front + " " + action.data.back);
       const newCard = Object.assign({}, { id : uuid.v4() }, action.data);
-      return state.cards.concat([newCard]);
+      return state.concat([newCard]);
 
     case 'EDIT_CARD': 
       // find can that will be edited
