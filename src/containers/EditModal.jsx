@@ -15,13 +15,16 @@ const EditModal = React.createClass({
     else this.refs.modal.hide();
   },
 
+  callback () {
+    // this.props.closeModal();
+    console.log('dismiss');
+  },
+
   render () {
-    return <div>
-      <Modal ref="modal">
-          <h2>Edit Modal</h2>
-          <button onClick={this.hideModal}>Close</button>
-      </Modal>
-    </div>;  
+    return <Modal ref="modal" onKeyPress={this.callback}>
+        <h2>Edit Modal</h2>
+        <button onClick={this.hideModal}>Close</button>
+      </Modal>;
   }  
 });
 
