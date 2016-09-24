@@ -7,6 +7,7 @@
 ------------------------------------------------------------------------------- */
 import React from 'react';
 import { render } from 'react-dom';
+import uuid from 'uuid';
 
 // store related
 import configureStore from './store/configureStore.js';
@@ -17,11 +18,11 @@ import Header from './containers/Header.jsx';
 import CardList from './containers/CardList.jsx';
 
 const cards = [
-  { front : 'hello world', back : 'wassaby' },
-  { front : 'hello world', back : 'wassaby' },
-  { front : 'hello world', back : 'wassaby' },
-  { front : 'hello world', back : 'wassaby' },
-  { front : 'hello world', back : 'wassaby' }
+  { id : uuid.v4(), front : 'hello world', back : 'wassaby' },
+  { id : uuid.v4(), front : 'hello world', back : 'wassaby' },
+  { id : uuid.v4(), front : 'hello world', back : 'wassaby' },
+  { id : uuid.v4(), front : 'hello world', back : 'wassaby' },
+  { id : uuid.v4(), front : 'hello world', back : 'wassaby' }
 ];
 
 const store = configureStore({ cards :  cards });

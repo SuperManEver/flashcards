@@ -1,18 +1,11 @@
 import React from 'react';
 import {connect} from 'react-redux';
-
-const Card = ({card}) => {
-  return (
-    <div className="col-sm-4 card-item">
-      <p>{card.front}</p>
-    </div>
-  );
-};
+import Card from '../components/Card.jsx';
 
 const CardList = React.createClass({
   render () {
     let {cards}     = this.props;
-    const allCards  = cards.map((card) => <Card card={card} />);
+    const allCards  = cards.map((card, idx) => <Card key={idx} card={card} />);
     return <div className="cards-container">
         {allCards}
       </div>;

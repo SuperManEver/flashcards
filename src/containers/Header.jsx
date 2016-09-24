@@ -8,7 +8,7 @@
 import React from 'react';
 import Modal from 'boron/ScaleModal';
 import {connect} from 'react-redux';
-import createCard from '../actions/cardActions.js';
+import {createCard} from '../actions/cardActions.js';
 
 const Header = React.createClass({
   getInitialState() {

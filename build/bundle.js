@@ -52,17 +52,21 @@
 
 	var _reactDom = __webpack_require__(34);
 
-	var _configureStore = __webpack_require__(172);
+	var _uuid = __webpack_require__(172);
+
+	var _uuid2 = _interopRequireDefault(_uuid);
+
+	var _configureStore = __webpack_require__(174);
 
 	var _configureStore2 = _interopRequireDefault(_configureStore);
 
-	var _reactRedux = __webpack_require__(194);
+	var _reactRedux = __webpack_require__(196);
 
-	var _Header = __webpack_require__(202);
+	var _Header = __webpack_require__(204);
 
 	var _Header2 = _interopRequireDefault(_Header);
 
-	var _CardList = __webpack_require__(213);
+	var _CardList = __webpack_require__(215);
 
 	var _CardList2 = _interopRequireDefault(_CardList);
 
@@ -72,14 +76,14 @@
 
 
 	// store related
-	/* ------------------------------------------------------------------------------
-	* app.js
-	*
-	* Root React component for applicationt
-	*
-	* Nick Luparev nikita.luparev@gmail.com
-	------------------------------------------------------------------------------- */
-	var cards = [{ front: 'hello world', back: 'wassaby' }, { front: 'hello world', back: 'wassaby' }, { front: 'hello world', back: 'wassaby' }, { front: 'hello world', back: 'wassaby' }, { front: 'hello world', back: 'wassaby' }];
+	var cards = [{ id: _uuid2.default.v4(), front: 'hello world', back: 'wassaby' }, { id: _uuid2.default.v4(), front: 'hello world', back: 'wassaby' }, { id: _uuid2.default.v4(), front: 'hello world', back: 'wassaby' }, { id: _uuid2.default.v4(), front: 'hello world', back: 'wassaby' }, { id: _uuid2.default.v4(), front: 'hello world', back: 'wassaby' }]; /* ------------------------------------------------------------------------------
+	                                                                                                                                                                                                                                                                                                                                                                  * app.js
+	                                                                                                                                                                                                                                                                                                                                                                  *
+	                                                                                                                                                                                                                                                                                                                                                                  * Root React component for applicationt
+	                                                                                                                                                                                                                                                                                                                                                                  *
+	                                                                                                                                                                                                                                                                                                                                                                  * Nick Luparev nikita.luparev@gmail.com
+	                                                                                                                                                                                                                                                                                                                                                                  ------------------------------------------------------------------------------- */
+
 
 	var store = (0, _configureStore2.default)({ cards: cards });
 
@@ -21471,6 +21475,234 @@
 /* 172 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//     uuid.js
+	//
+	//     Copyright (c) 2010-2012 Robert Kieffer
+	//     MIT License - http://opensource.org/licenses/mit-license.php
+
+	// Unique ID creation requires a high quality random # generator.  We feature
+	// detect to determine the best RNG source, normalizing to a function that
+	// returns 128-bits of randomness, since that's what's usually required
+	var _rng = __webpack_require__(173);
+
+	// Maps for number <-> hex string conversion
+	var _byteToHex = [];
+	var _hexToByte = {};
+	for (var i = 0; i < 256; i++) {
+	  _byteToHex[i] = (i + 0x100).toString(16).substr(1);
+	  _hexToByte[_byteToHex[i]] = i;
+	}
+
+	// **`parse()` - Parse a UUID into it's component bytes**
+	function parse(s, buf, offset) {
+	  var i = (buf && offset) || 0, ii = 0;
+
+	  buf = buf || [];
+	  s.toLowerCase().replace(/[0-9a-f]{2}/g, function(oct) {
+	    if (ii < 16) { // Don't overflow!
+	      buf[i + ii++] = _hexToByte[oct];
+	    }
+	  });
+
+	  // Zero out remaining bytes if string was short
+	  while (ii < 16) {
+	    buf[i + ii++] = 0;
+	  }
+
+	  return buf;
+	}
+
+	// **`unparse()` - Convert UUID byte array (ala parse()) into a string**
+	function unparse(buf, offset) {
+	  var i = offset || 0, bth = _byteToHex;
+	  return  bth[buf[i++]] + bth[buf[i++]] +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] +
+	          bth[buf[i++]] + bth[buf[i++]] +
+	          bth[buf[i++]] + bth[buf[i++]];
+	}
+
+	// **`v1()` - Generate time-based UUID**
+	//
+	// Inspired by https://github.com/LiosK/UUID.js
+	// and http://docs.python.org/library/uuid.html
+
+	// random #'s we need to init node and clockseq
+	var _seedBytes = _rng();
+
+	// Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+	var _nodeId = [
+	  _seedBytes[0] | 0x01,
+	  _seedBytes[1], _seedBytes[2], _seedBytes[3], _seedBytes[4], _seedBytes[5]
+	];
+
+	// Per 4.2.2, randomize (14 bit) clockseq
+	var _clockseq = (_seedBytes[6] << 8 | _seedBytes[7]) & 0x3fff;
+
+	// Previous uuid creation time
+	var _lastMSecs = 0, _lastNSecs = 0;
+
+	// See https://github.com/broofa/node-uuid for API details
+	function v1(options, buf, offset) {
+	  var i = buf && offset || 0;
+	  var b = buf || [];
+
+	  options = options || {};
+
+	  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
+
+	  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+	  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+	  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+	  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+	  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
+
+	  // Per 4.2.1.2, use count of uuid's generated during the current clock
+	  // cycle to simulate higher resolution clock
+	  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
+
+	  // Time since last uuid creation (in msecs)
+	  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
+
+	  // Per 4.2.1.2, Bump clockseq on clock regression
+	  if (dt < 0 && options.clockseq === undefined) {
+	    clockseq = clockseq + 1 & 0x3fff;
+	  }
+
+	  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+	  // time interval
+	  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+	    nsecs = 0;
+	  }
+
+	  // Per 4.2.1.2 Throw error if too many uuids are requested
+	  if (nsecs >= 10000) {
+	    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
+	  }
+
+	  _lastMSecs = msecs;
+	  _lastNSecs = nsecs;
+	  _clockseq = clockseq;
+
+	  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+	  msecs += 12219292800000;
+
+	  // `time_low`
+	  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+	  b[i++] = tl >>> 24 & 0xff;
+	  b[i++] = tl >>> 16 & 0xff;
+	  b[i++] = tl >>> 8 & 0xff;
+	  b[i++] = tl & 0xff;
+
+	  // `time_mid`
+	  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
+	  b[i++] = tmh >>> 8 & 0xff;
+	  b[i++] = tmh & 0xff;
+
+	  // `time_high_and_version`
+	  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+	  b[i++] = tmh >>> 16 & 0xff;
+
+	  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+	  b[i++] = clockseq >>> 8 | 0x80;
+
+	  // `clock_seq_low`
+	  b[i++] = clockseq & 0xff;
+
+	  // `node`
+	  var node = options.node || _nodeId;
+	  for (var n = 0; n < 6; n++) {
+	    b[i + n] = node[n];
+	  }
+
+	  return buf ? buf : unparse(b);
+	}
+
+	// **`v4()` - Generate random UUID**
+
+	// See https://github.com/broofa/node-uuid for API details
+	function v4(options, buf, offset) {
+	  // Deprecated - 'format' argument, as supported in v1.2
+	  var i = buf && offset || 0;
+
+	  if (typeof(options) == 'string') {
+	    buf = options == 'binary' ? new Array(16) : null;
+	    options = null;
+	  }
+	  options = options || {};
+
+	  var rnds = options.random || (options.rng || _rng)();
+
+	  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+	  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+	  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+	  // Copy bytes to buffer, if provided
+	  if (buf) {
+	    for (var ii = 0; ii < 16; ii++) {
+	      buf[i + ii] = rnds[ii];
+	    }
+	  }
+
+	  return buf || unparse(rnds);
+	}
+
+	// Export public API
+	var uuid = v4;
+	uuid.v1 = v1;
+	uuid.v4 = v4;
+	uuid.parse = parse;
+	uuid.unparse = unparse;
+
+	module.exports = uuid;
+
+
+/***/ },
+/* 173 */
+/***/ function(module, exports) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {
+	var rng;
+
+	var crypto = global.crypto || global.msCrypto; // for IE 11
+	if (crypto && crypto.getRandomValues) {
+	  // WHATWG crypto-based RNG - http://wiki.whatwg.org/wiki/Crypto
+	  // Moderately fast, high quality
+	  var _rnds8 = new Uint8Array(16);
+	  rng = function whatwgRNG() {
+	    crypto.getRandomValues(_rnds8);
+	    return _rnds8;
+	  };
+	}
+
+	if (!rng) {
+	  // Math.random()-based (RNG)
+	  //
+	  // If all else fails, use Math.random().  It's fast, but is of unspecified
+	  // quality.
+	  var  _rnds = new Array(16);
+	  rng = function() {
+	    for (var i = 0, r; i < 16; i++) {
+	      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+	      _rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+	    }
+
+	    return _rnds;
+	  };
+	}
+
+	module.exports = rng;
+
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 174 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
@@ -21478,13 +21710,13 @@
 	});
 	exports.default = configureStore;
 
-	var _redux = __webpack_require__(173);
+	var _redux = __webpack_require__(175);
 
-	var _reducers = __webpack_require__(187);
+	var _reducers = __webpack_require__(189);
 
 	var _reducers2 = _interopRequireDefault(_reducers);
 
-	var _reduxImmutableStateInvariant = __webpack_require__(189);
+	var _reduxImmutableStateInvariant = __webpack_require__(191);
 
 	var _reduxImmutableStateInvariant2 = _interopRequireDefault(_reduxImmutableStateInvariant);
 
@@ -21503,7 +21735,7 @@
 	;
 
 /***/ },
-/* 173 */
+/* 175 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -21511,27 +21743,27 @@
 	exports.__esModule = true;
 	exports.compose = exports.applyMiddleware = exports.bindActionCreators = exports.combineReducers = exports.createStore = undefined;
 
-	var _createStore = __webpack_require__(174);
+	var _createStore = __webpack_require__(176);
 
 	var _createStore2 = _interopRequireDefault(_createStore);
 
-	var _combineReducers = __webpack_require__(182);
+	var _combineReducers = __webpack_require__(184);
 
 	var _combineReducers2 = _interopRequireDefault(_combineReducers);
 
-	var _bindActionCreators = __webpack_require__(184);
+	var _bindActionCreators = __webpack_require__(186);
 
 	var _bindActionCreators2 = _interopRequireDefault(_bindActionCreators);
 
-	var _applyMiddleware = __webpack_require__(185);
+	var _applyMiddleware = __webpack_require__(187);
 
 	var _applyMiddleware2 = _interopRequireDefault(_applyMiddleware);
 
-	var _compose = __webpack_require__(186);
+	var _compose = __webpack_require__(188);
 
 	var _compose2 = _interopRequireDefault(_compose);
 
-	var _warning = __webpack_require__(183);
+	var _warning = __webpack_require__(185);
 
 	var _warning2 = _interopRequireDefault(_warning);
 
@@ -21555,7 +21787,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 174 */
+/* 176 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21564,11 +21796,11 @@
 	exports.ActionTypes = undefined;
 	exports['default'] = createStore;
 
-	var _isPlainObject = __webpack_require__(175);
+	var _isPlainObject = __webpack_require__(177);
 
 	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 
-	var _symbolObservable = __webpack_require__(179);
+	var _symbolObservable = __webpack_require__(181);
 
 	var _symbolObservable2 = _interopRequireDefault(_symbolObservable);
 
@@ -21821,11 +22053,11 @@
 	}
 
 /***/ },
-/* 175 */
+/* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var getPrototype = __webpack_require__(176),
-	    isObjectLike = __webpack_require__(178);
+	var getPrototype = __webpack_require__(178),
+	    isObjectLike = __webpack_require__(180);
 
 	/** `Object#toString` result references. */
 	var objectTag = '[object Object]';
@@ -21895,10 +22127,10 @@
 
 
 /***/ },
-/* 176 */
+/* 178 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var overArg = __webpack_require__(177);
+	var overArg = __webpack_require__(179);
 
 	/** Built-in value references. */
 	var getPrototype = overArg(Object.getPrototypeOf, Object);
@@ -21907,7 +22139,7 @@
 
 
 /***/ },
-/* 177 */
+/* 179 */
 /***/ function(module, exports) {
 
 	/**
@@ -21928,7 +22160,7 @@
 
 
 /***/ },
-/* 178 */
+/* 180 */
 /***/ function(module, exports) {
 
 	/**
@@ -21963,14 +22195,14 @@
 
 
 /***/ },
-/* 179 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(180);
+	module.exports = __webpack_require__(182);
 
 
 /***/ },
-/* 180 */
+/* 182 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
@@ -21979,7 +22211,7 @@
 		value: true
 	});
 
-	var _ponyfill = __webpack_require__(181);
+	var _ponyfill = __webpack_require__(183);
 
 	var _ponyfill2 = _interopRequireDefault(_ponyfill);
 
@@ -21998,7 +22230,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 181 */
+/* 183 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -22026,7 +22258,7 @@
 	};
 
 /***/ },
-/* 182 */
+/* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -22034,13 +22266,13 @@
 	exports.__esModule = true;
 	exports['default'] = combineReducers;
 
-	var _createStore = __webpack_require__(174);
+	var _createStore = __webpack_require__(176);
 
-	var _isPlainObject = __webpack_require__(175);
+	var _isPlainObject = __webpack_require__(177);
 
 	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 
-	var _warning = __webpack_require__(183);
+	var _warning = __webpack_require__(185);
 
 	var _warning2 = _interopRequireDefault(_warning);
 
@@ -22174,7 +22406,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 183 */
+/* 185 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -22204,7 +22436,7 @@
 	}
 
 /***/ },
-/* 184 */
+/* 186 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -22260,7 +22492,7 @@
 	}
 
 /***/ },
-/* 185 */
+/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22271,7 +22503,7 @@
 
 	exports['default'] = applyMiddleware;
 
-	var _compose = __webpack_require__(186);
+	var _compose = __webpack_require__(188);
 
 	var _compose2 = _interopRequireDefault(_compose);
 
@@ -22323,7 +22555,7 @@
 	}
 
 /***/ },
-/* 186 */
+/* 188 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -22366,7 +22598,7 @@
 	}
 
 /***/ },
-/* 187 */
+/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22375,9 +22607,9 @@
 	  value: true
 	});
 
-	var _redux = __webpack_require__(173);
+	var _redux = __webpack_require__(175);
 
-	var _cardReducer = __webpack_require__(188);
+	var _cardReducer = __webpack_require__(190);
 
 	var _cardReducer2 = _interopRequireDefault(_cardReducer);
 
@@ -22398,14 +22630,21 @@
 	exports.default = rootReducer;
 
 /***/ },
-/* 188 */
-/***/ function(module, exports) {
+/* 190 */
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+
+	var _uuid = __webpack_require__(172);
+
+	var _uuid2 = _interopRequireDefault(_uuid);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	var cardReducer = function cardReducer() {
 	  var state = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
 	  var action = arguments[1];
@@ -22413,7 +22652,7 @@
 	  switch (action.type) {
 	    case 'CREATE_CARD':
 	      console.log('new card is created ' + action.data.front + " " + action.data.back);
-	      var newCard = Object.assign({}, action.data);
+	      var newCard = Object.assign({}, { id: _uuid2.default.v4() }, action.data);
 	      return state.concat([newCard]);
 	    default:
 	      return state;
@@ -22423,7 +22662,7 @@
 	exports.default = cardReducer;
 
 /***/ },
-/* 189 */
+/* 191 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22435,19 +22674,19 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _invariant = __webpack_require__(190);
+	var _invariant = __webpack_require__(192);
 
 	var _invariant2 = _interopRequireDefault(_invariant);
 
-	var _jsonStringifySafe = __webpack_require__(191);
+	var _jsonStringifySafe = __webpack_require__(193);
 
 	var _jsonStringifySafe2 = _interopRequireDefault(_jsonStringifySafe);
 
-	var _isImmutable = __webpack_require__(192);
+	var _isImmutable = __webpack_require__(194);
 
 	var _isImmutable2 = _interopRequireDefault(_isImmutable);
 
-	var _trackForMutations = __webpack_require__(193);
+	var _trackForMutations = __webpack_require__(195);
 
 	var _trackForMutations2 = _interopRequireDefault(_trackForMutations);
 
@@ -22495,7 +22734,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 190 */
+/* 192 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -22553,7 +22792,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 191 */
+/* 193 */
 /***/ function(module, exports) {
 
 	exports = module.exports = stringify
@@ -22586,7 +22825,7 @@
 
 
 /***/ },
-/* 192 */
+/* 194 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -22603,7 +22842,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 193 */
+/* 195 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -22674,7 +22913,7 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 194 */
+/* 196 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22682,11 +22921,11 @@
 	exports.__esModule = true;
 	exports.connect = exports.Provider = undefined;
 
-	var _Provider = __webpack_require__(195);
+	var _Provider = __webpack_require__(197);
 
 	var _Provider2 = _interopRequireDefault(_Provider);
 
-	var _connect = __webpack_require__(198);
+	var _connect = __webpack_require__(200);
 
 	var _connect2 = _interopRequireDefault(_connect);
 
@@ -22696,7 +22935,7 @@
 	exports.connect = _connect2["default"];
 
 /***/ },
-/* 195 */
+/* 197 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -22706,11 +22945,11 @@
 
 	var _react = __webpack_require__(1);
 
-	var _storeShape = __webpack_require__(196);
+	var _storeShape = __webpack_require__(198);
 
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 
-	var _warning = __webpack_require__(197);
+	var _warning = __webpack_require__(199);
 
 	var _warning2 = _interopRequireDefault(_warning);
 
@@ -22780,7 +23019,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 196 */
+/* 198 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22796,7 +23035,7 @@
 	});
 
 /***/ },
-/* 197 */
+/* 199 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -22825,7 +23064,7 @@
 	}
 
 /***/ },
-/* 198 */
+/* 200 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -22837,31 +23076,31 @@
 
 	var _react = __webpack_require__(1);
 
-	var _storeShape = __webpack_require__(196);
+	var _storeShape = __webpack_require__(198);
 
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 
-	var _shallowEqual = __webpack_require__(199);
+	var _shallowEqual = __webpack_require__(201);
 
 	var _shallowEqual2 = _interopRequireDefault(_shallowEqual);
 
-	var _wrapActionCreators = __webpack_require__(200);
+	var _wrapActionCreators = __webpack_require__(202);
 
 	var _wrapActionCreators2 = _interopRequireDefault(_wrapActionCreators);
 
-	var _warning = __webpack_require__(197);
+	var _warning = __webpack_require__(199);
 
 	var _warning2 = _interopRequireDefault(_warning);
 
-	var _isPlainObject = __webpack_require__(175);
+	var _isPlainObject = __webpack_require__(177);
 
 	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 
-	var _hoistNonReactStatics = __webpack_require__(201);
+	var _hoistNonReactStatics = __webpack_require__(203);
 
 	var _hoistNonReactStatics2 = _interopRequireDefault(_hoistNonReactStatics);
 
-	var _invariant = __webpack_require__(190);
+	var _invariant = __webpack_require__(192);
 
 	var _invariant2 = _interopRequireDefault(_invariant);
 
@@ -23224,7 +23463,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 199 */
+/* 201 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -23255,7 +23494,7 @@
 	}
 
 /***/ },
-/* 200 */
+/* 202 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -23263,7 +23502,7 @@
 	exports.__esModule = true;
 	exports["default"] = wrapActionCreators;
 
-	var _redux = __webpack_require__(173);
+	var _redux = __webpack_require__(175);
 
 	function wrapActionCreators(actionCreators) {
 	  return function (dispatch) {
@@ -23272,7 +23511,7 @@
 	}
 
 /***/ },
-/* 201 */
+/* 203 */
 /***/ function(module, exports) {
 
 	/**
@@ -23328,7 +23567,7 @@
 
 
 /***/ },
-/* 202 */
+/* 204 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -23341,15 +23580,13 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _ScaleModal = __webpack_require__(203);
+	var _ScaleModal = __webpack_require__(205);
 
 	var _ScaleModal2 = _interopRequireDefault(_ScaleModal);
 
-	var _reactRedux = __webpack_require__(194);
+	var _reactRedux = __webpack_require__(196);
 
-	var _cardActions = __webpack_require__(212);
-
-	var _cardActions2 = _interopRequireDefault(_cardActions);
+	var _cardActions = __webpack_require__(214);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -23498,7 +23735,7 @@
 	function mapDispatchToProps(dispatch) {
 	  return {
 	    createCard: function createCard(data) {
-	      return dispatch((0, _cardActions2.default)(data));
+	      return dispatch((0, _cardActions.createCard)(data));
 	    }
 	  };
 	};
@@ -23506,12 +23743,12 @@
 	exports.default = (0, _reactRedux.connect)(null, mapDispatchToProps)(Header);
 
 /***/ },
-/* 203 */
+/* 205 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var modalFactory = __webpack_require__(204);
-	var insertKeyframesRule = __webpack_require__(209);
-	var appendVendorPrefix = __webpack_require__(206);
+	var modalFactory = __webpack_require__(206);
+	var insertKeyframesRule = __webpack_require__(211);
+	var appendVendorPrefix = __webpack_require__(208);
 
 	var animation = {
 	    show: {
@@ -23612,12 +23849,12 @@
 
 
 /***/ },
-/* 204 */
+/* 206 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var transitionEvents = __webpack_require__(205);
-	var appendVendorPrefix = __webpack_require__(206);
+	var transitionEvents = __webpack_require__(207);
+	var appendVendorPrefix = __webpack_require__(208);
 
 	module.exports = function(animation){
 
@@ -23796,7 +24033,7 @@
 
 
 /***/ },
-/* 205 */
+/* 207 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -23897,12 +24134,12 @@
 
 
 /***/ },
-/* 206 */
+/* 208 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getVendorPropertyName = __webpack_require__(207);
+	var getVendorPropertyName = __webpack_require__(209);
 
 	module.exports = function(target, sources) {
 	  var to = Object(target);
@@ -23933,12 +24170,12 @@
 
 
 /***/ },
-/* 207 */
+/* 209 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var builtinStyle = __webpack_require__(208);
+	var builtinStyle = __webpack_require__(210);
 	var prefixes = ['Moz', 'Webkit', 'O', 'ms'];
 	var domVendorPrefix;
 
@@ -23976,7 +24213,7 @@
 
 
 /***/ },
-/* 208 */
+/* 210 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -23985,13 +24222,13 @@
 
 
 /***/ },
-/* 209 */
+/* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var insertRule = __webpack_require__(210);
-	var vendorPrefix = __webpack_require__(211)();
+	var insertRule = __webpack_require__(212);
+	var vendorPrefix = __webpack_require__(213)();
 	var index = 0;
 
 	module.exports = function(keyframes) {
@@ -24021,7 +24258,7 @@
 
 
 /***/ },
-/* 210 */
+/* 212 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -24046,7 +24283,7 @@
 
 
 /***/ },
-/* 211 */
+/* 213 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -24065,22 +24302,27 @@
 
 
 /***/ },
-/* 212 */
+/* 214 */
 /***/ function(module, exports) {
 
 	'use strict';
 
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	function createCard(data) {
+	var actions = {};
+
+	actions.createCard = function (data) {
 	  return { type: 'CREATE_CARD', data: data };
 	};
 
-	exports.default = createCard;
+	actions.editCard = function (data) {
+	  console.log(data);
+	  return { type: 'EDIT_CARD', data: data };
+	};
+
+	// export default actions;
+	module.exports = actions;
 
 /***/ },
-/* 213 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24093,31 +24335,21 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactRedux = __webpack_require__(194);
+	var _reactRedux = __webpack_require__(196);
+
+	var _Card = __webpack_require__(216);
+
+	var _Card2 = _interopRequireDefault(_Card);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	var Card = function Card(_ref) {
-	  var card = _ref.card;
-
-	  return _react2.default.createElement(
-	    'div',
-	    { className: 'col-sm-4 card-item' },
-	    _react2.default.createElement(
-	      'p',
-	      null,
-	      card.front
-	    )
-	  );
-	};
 
 	var CardList = _react2.default.createClass({
 	  displayName: 'CardList',
 	  render: function render() {
 	    var cards = this.props.cards;
 
-	    var allCards = cards.map(function (card) {
-	      return _react2.default.createElement(Card, { card: card });
+	    var allCards = cards.map(function (card, idx) {
+	      return _react2.default.createElement(_Card2.default, { key: idx, card: card });
 	    });
 	    return _react2.default.createElement(
 	      'div',
@@ -24134,6 +24366,63 @@
 	}
 
 	exports.default = (0, _reactRedux.connect)(mapStateToProps)(CardList);
+
+/***/ },
+/* 216 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactRedux = __webpack_require__(196);
+
+	var _cardActions = __webpack_require__(214);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var Card = function Card(_ref) {
+	  var card = _ref.card;
+	  var _onClick = _ref.onClick;
+
+	  return _react2.default.createElement(
+	    'div',
+	    { className: 'col-sm-4 card-item' },
+	    _react2.default.createElement(
+	      'p',
+	      null,
+	      card.front
+	    ),
+	    _react2.default.createElement(
+	      'button',
+	      { onClick: function onClick() {
+	          return _onClick(card.id);
+	        }, type: 'button', className: 'btn btn-default' },
+	      'Edit'
+	    )
+	  );
+	};
+
+	Card.propTypes = {
+	  card: _react.PropTypes.object.isRequired,
+	  onClick: _react.PropTypes.func.isRequired
+	};
+
+	function mapDispatchToProps(dispatch) {
+	  return {
+	    onClick: function onClick(id) {
+	      return dispatch((0, _cardActions.editCard)(id));
+	    }
+	  };
+	}
+
+	exports.default = (0, _reactRedux.connect)(null, mapDispatchToProps)(Card);
 
 /***/ }
 /******/ ]);

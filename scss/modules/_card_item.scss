@@ -11,4 +11,14 @@
   margin-right: 4px;
   margin-bottom: 20px;
   // text-align : center;
+
+  p {
+    display : inline-block;
+  }
+
+  button {
+    display : inline-block;
+    float : right;
+  }
+
 }
