@@ -1,6 +1,6 @@
 import React, {PropTypes} from 'react';
 import {connect} from 'react-redux';
-import {editCard} from '../actions/cardActions.js';
+import {openModal} from '../actions/editModalActions.js';
 
 const Card = ({card, onClick}) => {
   return (
@@ -18,7 +18,7 @@ Card.propTypes = {
 
 function mapDispatchToProps (dispatch) {
   return { 
-    onClick : (id) => dispatch( editCard(id) )
+    onClick : (id) => dispatch( openModal(id) )
   };
 }
 

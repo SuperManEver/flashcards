@@ -16,6 +16,7 @@ import {Provider} from 'react-redux';
 // components
 import Header from './containers/Header.jsx';
 import CardList from './containers/CardList.jsx';
+import EditModal from './containers/EditModal.jsx';
 
 const cards = [
   { id : uuid.v4(), front : 'hello world', back : 'wassaby' },
@@ -32,6 +33,7 @@ var App = React.createClass({
     return <Provider store={store}>
       <div className="container">
         <Header />
+        <EditModal />
         <CardList />
       </div>
     </Provider>;
