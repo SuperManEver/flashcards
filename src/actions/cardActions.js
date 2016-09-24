@@ -5,9 +5,7 @@ actions.createCard = function (data) {
 };
 
 actions.editCard = function (id) {
-  console.log("card id: " + id);
   return { type : 'EDIT_CARD', id : id };
 };
 
-// export default actions;
 module.exports = actions;

@@ -60,35 +60,29 @@
 
 	var _configureStore2 = _interopRequireDefault(_configureStore);
 
-	var _reactRedux = __webpack_require__(199);
+	var _reactRedux = __webpack_require__(198);
 
-	var _Header = __webpack_require__(207);
+	var _Header = __webpack_require__(206);
 
 	var _Header2 = _interopRequireDefault(_Header);
 
-	var _CardList = __webpack_require__(218);
+	var _CardList = __webpack_require__(217);
 
 	var _CardList2 = _interopRequireDefault(_CardList);
 
-	var _EditModal = __webpack_require__(221);
-
-	var _EditModal2 = _interopRequireDefault(_EditModal);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	/* ------------------------------------------------------------------------------
-	* app.js
-	*
-	* Root React component for applicationt
-	*
-	* Nick Luparev nikita.luparev@gmail.com
-	------------------------------------------------------------------------------- */
-	var cards = [{ id: _uuid2.default.v4(), front: 'hello world', back: 'wassaby' }, { id: _uuid2.default.v4(), front: 'hello world', back: 'wassaby' }, { id: _uuid2.default.v4(), front: 'hello world', back: 'wassaby' }, { id: _uuid2.default.v4(), front: 'hello world', back: 'wassaby' }, { id: _uuid2.default.v4(), front: 'hello world', back: 'wassaby' }];
 
 	// components
 
 
 	// store related
+	var cards = [{ id: _uuid2.default.v4(), front: 'curry', back: 'wassaby', isEditing: false }, { id: _uuid2.default.v4(), front: 'haskell', back: 'wassaby', isEditing: false }, { id: _uuid2.default.v4(), front: 'lambda', back: 'wassaby', isEditing: false }, { id: _uuid2.default.v4(), front: 'thread', back: 'wassaby', isEditing: false }, { id: _uuid2.default.v4(), front: 'calculus', back: 'wassaby', isEditing: false }]; /* ------------------------------------------------------------------------------
+	                                                                                                                                                                                                                                                                                                                                                                                                                                     * app.js
+	                                                                                                                                                                                                                                                                                                                                                                                                                                     *
+	                                                                                                                                                                                                                                                                                                                                                                                                                                     * Root React component for applicationt
+	                                                                                                                                                                                                                                                                                                                                                                                                                                     *
+	                                                                                                                                                                                                                                                                                                                                                                                                                                     * Nick Luparev nikita.luparev@gmail.com
+	                                                                                                                                                                                                                                                                                                                                                                                                                                     ------------------------------------------------------------------------------- */
 
 
 	var store = (0, _configureStore2.default)({ cards: cards });
@@ -103,7 +97,6 @@
 	        'div',
 	        { className: 'container' },
 	        _react2.default.createElement(_Header2.default, null),
-	        _react2.default.createElement(_EditModal2.default, null),
 	        _react2.default.createElement(_CardList2.default, null)
 	      )
 	    );
@@ -21723,11 +21716,11 @@
 
 	var _reducers2 = _interopRequireDefault(_reducers);
 
-	var _reduxImmutableStateInvariant = __webpack_require__(193);
+	var _reduxImmutableStateInvariant = __webpack_require__(192);
 
 	var _reduxImmutableStateInvariant2 = _interopRequireDefault(_reduxImmutableStateInvariant);
 
-	var _reduxLogger = __webpack_require__(198);
+	var _reduxLogger = __webpack_require__(197);
 
 	var _reduxLogger2 = _interopRequireDefault(_reduxLogger);
 
@@ -22624,22 +22617,19 @@
 
 	var _cardReducer2 = _interopRequireDefault(_cardReducer);
 
-	var _editModalReducer = __webpack_require__(192);
-
-	var _editModalReducer2 = _interopRequireDefault(_editModalReducer);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	/* ------------------------------------------------------------------------------
+	* main.js
+	*
+	* root reducer for application
+	*
+	* Nick Luparev nikita.luparev@gmail.com
+	------------------------------------------------------------------------------- */
+
 	var rootReducer = (0, _redux.combineReducers)({
-	  cards: _cardReducer2.default,
-	  edit_modal: _editModalReducer2.default
-	}); /* ------------------------------------------------------------------------------
-	    * main.js
-	    *
-	    * root reducer for application
-	    *
-	    * Nick Luparev nikita.luparev@gmail.com
-	    ------------------------------------------------------------------------------- */
+	  cards: _cardReducer2.default
+	});
 
 	exports.default = rootReducer;
 
@@ -22652,6 +22642,8 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 	var _uuid = __webpack_require__(172);
 
@@ -22667,21 +22659,35 @@
 	  var state = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
 	  var action = arguments[1];
 
-	  switch (action.type) {
-	    case 'CREATE_CARD':
-	      // console.log('new card is created ' + action.data.front + " " + action.data.back);
-	      var newCard = Object.assign({}, { id: _uuid2.default.v4() }, action.data);
-	      return state.concat([newCard]);
+	  var _ret = function () {
+	    switch (action.type) {
+	      case 'CREATE_CARD':
+	        var newCard = Object.assign({}, { id: _uuid2.default.v4(), isEditing: false }, action.data);
+	        return {
+	          v: state.concat([newCard])
+	        };
 
-	    case 'EDIT_CARD':
-	      // find can that will be edited
-	      // const card = R.find(R.propEq('id', action.id), state.cards);
-	      // return Object.assign({}, state, { isEditModalOpen : true });
-	      return state;
+	      case 'EDIT_CARD':
+	        // find card that will be edited
+	        var card = _ramda2.default.find(_ramda2.default.propEq('id', action.id), state);
+	        var updatedCard = Object.assign({}, card, { isEditing: true });
 
-	    default:
-	      return state;
-	  }
+	        var replaceOldCard = _ramda2.default.map(function (card) {
+	          return _ramda2.default.propEq('id', action.id)(card) ? updatedCard : card;
+	        });
+
+	        return {
+	          v: replaceOldCard(state)
+	        };
+
+	      default:
+	        return {
+	          v: state
+	        };
+	    }
+	  }();
+
+	  if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
 	};
 
 	exports.default = cardReducer;
@@ -31525,41 +31531,6 @@
 
 /***/ },
 /* 192 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	/* ------------------------------------------------------------------------------
-	* editModalReducer.js
-	*
-	* Reducer for modal window for editing cards
-	*
-	* Nick Luparev nikita.luparev@gmail.com
-	------------------------------------------------------------------------------- */
-	var editModalReducer = function editModalReducer() {
-	  var state = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
-	  var action = arguments[1];
-
-	  switch (action.type) {
-	    case 'OPEN_EDIT_MODAL':
-	      return true;
-
-	    case 'CLOSE_EDIT_MODAL':
-	      console.log('close modal');
-	      return false;
-
-	    default:
-	      return state;
-	  }
-	};
-
-	exports.default = editModalReducer;
-
-/***/ },
-/* 193 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31571,19 +31542,19 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _invariant = __webpack_require__(194);
+	var _invariant = __webpack_require__(193);
 
 	var _invariant2 = _interopRequireDefault(_invariant);
 
-	var _jsonStringifySafe = __webpack_require__(195);
+	var _jsonStringifySafe = __webpack_require__(194);
 
 	var _jsonStringifySafe2 = _interopRequireDefault(_jsonStringifySafe);
 
-	var _isImmutable = __webpack_require__(196);
+	var _isImmutable = __webpack_require__(195);
 
 	var _isImmutable2 = _interopRequireDefault(_isImmutable);
 
-	var _trackForMutations = __webpack_require__(197);
+	var _trackForMutations = __webpack_require__(196);
 
 	var _trackForMutations2 = _interopRequireDefault(_trackForMutations);
 
@@ -31631,7 +31602,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 194 */
+/* 193 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -31689,7 +31660,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 195 */
+/* 194 */
 /***/ function(module, exports) {
 
 	exports = module.exports = stringify
@@ -31722,7 +31693,7 @@
 
 
 /***/ },
-/* 196 */
+/* 195 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -31739,7 +31710,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 197 */
+/* 196 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -31810,7 +31781,7 @@
 	module.exports = exports["default"];
 
 /***/ },
-/* 198 */
+/* 197 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -32043,7 +32014,7 @@
 	module.exports = createLogger;
 
 /***/ },
-/* 199 */
+/* 198 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32051,11 +32022,11 @@
 	exports.__esModule = true;
 	exports.connect = exports.Provider = undefined;
 
-	var _Provider = __webpack_require__(200);
+	var _Provider = __webpack_require__(199);
 
 	var _Provider2 = _interopRequireDefault(_Provider);
 
-	var _connect = __webpack_require__(203);
+	var _connect = __webpack_require__(202);
 
 	var _connect2 = _interopRequireDefault(_connect);
 
@@ -32065,7 +32036,7 @@
 	exports.connect = _connect2["default"];
 
 /***/ },
-/* 200 */
+/* 199 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -32075,11 +32046,11 @@
 
 	var _react = __webpack_require__(1);
 
-	var _storeShape = __webpack_require__(201);
+	var _storeShape = __webpack_require__(200);
 
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 
-	var _warning = __webpack_require__(202);
+	var _warning = __webpack_require__(201);
 
 	var _warning2 = _interopRequireDefault(_warning);
 
@@ -32149,7 +32120,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 201 */
+/* 200 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32165,7 +32136,7 @@
 	});
 
 /***/ },
-/* 202 */
+/* 201 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -32194,7 +32165,7 @@
 	}
 
 /***/ },
-/* 203 */
+/* 202 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -32206,19 +32177,19 @@
 
 	var _react = __webpack_require__(1);
 
-	var _storeShape = __webpack_require__(201);
+	var _storeShape = __webpack_require__(200);
 
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 
-	var _shallowEqual = __webpack_require__(204);
+	var _shallowEqual = __webpack_require__(203);
 
 	var _shallowEqual2 = _interopRequireDefault(_shallowEqual);
 
-	var _wrapActionCreators = __webpack_require__(205);
+	var _wrapActionCreators = __webpack_require__(204);
 
 	var _wrapActionCreators2 = _interopRequireDefault(_wrapActionCreators);
 
-	var _warning = __webpack_require__(202);
+	var _warning = __webpack_require__(201);
 
 	var _warning2 = _interopRequireDefault(_warning);
 
@@ -32226,11 +32197,11 @@
 
 	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 
-	var _hoistNonReactStatics = __webpack_require__(206);
+	var _hoistNonReactStatics = __webpack_require__(205);
 
 	var _hoistNonReactStatics2 = _interopRequireDefault(_hoistNonReactStatics);
 
-	var _invariant = __webpack_require__(194);
+	var _invariant = __webpack_require__(193);
 
 	var _invariant2 = _interopRequireDefault(_invariant);
 
@@ -32593,7 +32564,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 204 */
+/* 203 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -32624,7 +32595,7 @@
 	}
 
 /***/ },
-/* 205 */
+/* 204 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32641,7 +32612,7 @@
 	}
 
 /***/ },
-/* 206 */
+/* 205 */
 /***/ function(module, exports) {
 
 	/**
@@ -32697,7 +32668,7 @@
 
 
 /***/ },
-/* 207 */
+/* 206 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32710,13 +32681,13 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _ScaleModal = __webpack_require__(208);
+	var _ScaleModal = __webpack_require__(207);
 
 	var _ScaleModal2 = _interopRequireDefault(_ScaleModal);
 
-	var _reactRedux = __webpack_require__(199);
+	var _reactRedux = __webpack_require__(198);
 
-	var _cardActions = __webpack_require__(217);
+	var _cardActions = __webpack_require__(216);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -32867,12 +32838,12 @@
 	exports.default = (0, _reactRedux.connect)(null, mapDispatchToProps)(Header);
 
 /***/ },
-/* 208 */
+/* 207 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var modalFactory = __webpack_require__(209);
-	var insertKeyframesRule = __webpack_require__(214);
-	var appendVendorPrefix = __webpack_require__(211);
+	var modalFactory = __webpack_require__(208);
+	var insertKeyframesRule = __webpack_require__(213);
+	var appendVendorPrefix = __webpack_require__(210);
 
 	var animation = {
 	    show: {
@@ -32973,12 +32944,12 @@
 
 
 /***/ },
-/* 209 */
+/* 208 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var transitionEvents = __webpack_require__(210);
-	var appendVendorPrefix = __webpack_require__(211);
+	var transitionEvents = __webpack_require__(209);
+	var appendVendorPrefix = __webpack_require__(210);
 
 	module.exports = function(animation){
 
@@ -33157,7 +33128,7 @@
 
 
 /***/ },
-/* 210 */
+/* 209 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -33258,12 +33229,12 @@
 
 
 /***/ },
-/* 211 */
+/* 210 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var getVendorPropertyName = __webpack_require__(212);
+	var getVendorPropertyName = __webpack_require__(211);
 
 	module.exports = function(target, sources) {
 	  var to = Object(target);
@@ -33294,12 +33265,12 @@
 
 
 /***/ },
-/* 212 */
+/* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var builtinStyle = __webpack_require__(213);
+	var builtinStyle = __webpack_require__(212);
 	var prefixes = ['Moz', 'Webkit', 'O', 'ms'];
 	var domVendorPrefix;
 
@@ -33337,7 +33308,7 @@
 
 
 /***/ },
-/* 213 */
+/* 212 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -33346,13 +33317,13 @@
 
 
 /***/ },
-/* 214 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var insertRule = __webpack_require__(215);
-	var vendorPrefix = __webpack_require__(216)();
+	var insertRule = __webpack_require__(214);
+	var vendorPrefix = __webpack_require__(215)();
 	var index = 0;
 
 	module.exports = function(keyframes) {
@@ -33382,7 +33353,7 @@
 
 
 /***/ },
-/* 215 */
+/* 214 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -33407,7 +33378,7 @@
 
 
 /***/ },
-/* 216 */
+/* 215 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -33426,7 +33397,7 @@
 
 
 /***/ },
-/* 217 */
+/* 216 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -33438,15 +33409,13 @@
 	};
 
 	actions.editCard = function (id) {
-	  console.log("card id: " + id);
 	  return { type: 'EDIT_CARD', id: id };
 	};
 
-	// export default actions;
 	module.exports = actions;
 
 /***/ },
-/* 218 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33459,9 +33428,9 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactRedux = __webpack_require__(199);
+	var _reactRedux = __webpack_require__(198);
 
-	var _Card = __webpack_require__(219);
+	var _Card = __webpack_require__(218);
 
 	var _Card2 = _interopRequireDefault(_Card);
 
@@ -33492,7 +33461,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps)(CardList);
 
 /***/ },
-/* 219 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33505,9 +33474,9 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactRedux = __webpack_require__(199);
+	var _reactRedux = __webpack_require__(198);
 
-	var _editModalActions = __webpack_require__(220);
+	var _cardActions = __webpack_require__(216);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33541,102 +33510,12 @@
 	function mapDispatchToProps(dispatch) {
 	  return {
 	    onClick: function onClick(id) {
-	      return dispatch((0, _editModalActions.openModal)(id));
+	      return dispatch((0, _cardActions.editCard)(id));
 	    }
 	  };
 	}
 
 	exports.default = (0, _reactRedux.connect)(null, mapDispatchToProps)(Card);
-
-/***/ },
-/* 220 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	var actions = {};
-
-	actions.openModal = function (id) {
-	  return { type: 'OPEN_EDIT_MODAL', data: id };
-	};
-
-	actions.closeModal = function () {
-	  return { type: 'CLOSE_EDIT_MODAL' };
-	};
-
-	module.exports = actions;
-
-/***/ },
-/* 221 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _ScaleModal = __webpack_require__(208);
-
-	var _ScaleModal2 = _interopRequireDefault(_ScaleModal);
-
-	var _reactRedux = __webpack_require__(199);
-
-	var _editModalActions = __webpack_require__(220);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	var EditModal = _react2.default.createClass({
-	  displayName: 'EditModal',
-	  hideModal: function hideModal() {
-	    this.props.closeModal();
-	    this.refs.modal.hide();
-	  },
-	  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
-	    // console.log(nextProps);
-	    if (nextProps.edit_modal) this.refs.modal.show();else this.refs.modal.hide();
-	  },
-	  callback: function callback() {
-	    // this.props.closeModal();
-	    console.log('dismiss');
-	  },
-	  render: function render() {
-	    return _react2.default.createElement(
-	      _ScaleModal2.default,
-	      { ref: 'modal', onKeyPress: this.callback },
-	      _react2.default.createElement(
-	        'h2',
-	        null,
-	        'Edit Modal'
-	      ),
-	      _react2.default.createElement(
-	        'button',
-	        { onClick: this.hideModal },
-	        'Close'
-	      )
-	    );
-	  }
-	});
-
-	function mapStateToProps(state, ownProps) {
-	  return {
-	    edit_modal: state.edit_modal
-	  };
-	}
-
-	function mapDispatchToProps(dispatch) {
-	  return {
-	    closeModal: function closeModal() {
-	      return dispatch((0, _editModalActions.closeModal)());
-	    }
-	  };
-	}
-
-	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(EditModal);
 
 /***/ }
 /******/ ]);

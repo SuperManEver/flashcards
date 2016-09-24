@@ -16,14 +16,13 @@ import {Provider} from 'react-redux';
 // components
 import Header from './containers/Header.jsx';
 import CardList from './containers/CardList.jsx';
-import EditModal from './containers/EditModal.jsx';
 
 const cards = [
-  { id : uuid.v4(), front : 'hello world', back : 'wassaby' },
-  { id : uuid.v4(), front : 'hello world', back : 'wassaby' },
-  { id : uuid.v4(), front : 'hello world', back : 'wassaby' },
-  { id : uuid.v4(), front : 'hello world', back : 'wassaby' },
-  { id : uuid.v4(), front : 'hello world', back : 'wassaby' }
+  { id : uuid.v4(), front : 'curry', back : 'wassaby', isEditing : false },
+  { id : uuid.v4(), front : 'haskell', back : 'wassaby', isEditing : false },
+  { id : uuid.v4(), front : 'lambda', back : 'wassaby', isEditing : false },
+  { id : uuid.v4(), front : 'thread', back : 'wassaby', isEditing : false },
+  { id : uuid.v4(), front : 'calculus', back : 'wassaby', isEditing : false }
 ];
 
 const store = configureStore({ cards :  cards });
@@ -33,7 +32,6 @@ var App = React.createClass({
     return <Provider store={store}>
       <div className="container">
         <Header />
-        <EditModal />
         <CardList />
       </div>
     </Provider>;
