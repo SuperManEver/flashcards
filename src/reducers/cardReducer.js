@@ -1,9 +1,10 @@
 import uuid from 'uuid';
 import R from 'ramda';
 
-function replaceCard (state, id, flag) {
+function replaceCard (state, id, diff) {
+  // find that needs to be changed
   const card            = R.find(R.propEq('id', id), state);
-  const updatedCard     = Object.assign({}, card, { isEditing : flag });
+  const updatedCard     = Object.assign({}, card, diff);
 
   const replaceOldCard  = R.map((card) => R.propEq('id', id)(card) ? updatedCard : card);
 
@@ -17,19 +18,14 @@ const cardReducer = (state = [], action) => {
       return state.concat([newCard]);
 
     case 'EDIT_CARD': 
-      // find card that will be edited
-      return replaceCard (state, action.id, true);
+      return replaceCard (state, action.id, { isEditing : true });
 
     case 'SAVE_CARD':
-      /*
-      const card            = R.find(R.propEq('id', action.id), state);
-      const updatedCard     = Object.assign({}, card, { isEditing : false });
+      return replaceCard(state, action.id, { isEditing : false });
 
-      const replaceOldCard  = R.map((card) => R.propEq('id', action.id)(card) ? updatedCard : card);
-
-      return replaceOldCard(state);
-      */
-      return replaceCard(state, action.id, false);
+    case 'UPDATE_CARD':
+      let {front, back} = action.data;
+      return replaceCard(state, action.data.id, { isEditing : false, front : front, back : back });
 
     default: 
       return state;

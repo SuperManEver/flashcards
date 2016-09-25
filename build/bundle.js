@@ -22653,9 +22653,10 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function replaceCard(state, id, flag) {
+	function replaceCard(state, id, diff) {
+	  // find that needs to be changed
 	  var card = _ramda2.default.find(_ramda2.default.propEq('id', id), state);
-	  var updatedCard = Object.assign({}, card, { isEditing: flag });
+	  var updatedCard = Object.assign({}, card, diff);
 
 	  var replaceOldCard = _ramda2.default.map(function (card) {
 	    return _ramda2.default.propEq('id', id)(card) ? updatedCard : card;
@@ -22674,17 +22675,17 @@
 	      return state.concat([newCard]);
 
 	    case 'EDIT_CARD':
-	      // find card that will be edited
-	      return replaceCard(state, action.id, true);
+	      return replaceCard(state, action.id, { isEditing: true });
 
 	    case 'SAVE_CARD':
-	      /*
-	      const card            = R.find(R.propEq('id', action.id), state);
-	      const updatedCard     = Object.assign({}, card, { isEditing : false });
-	       const replaceOldCard  = R.map((card) => R.propEq('id', action.id)(card) ? updatedCard : card);
-	       return replaceOldCard(state);
-	      */
-	      return replaceCard(state, action.id, false);
+	      return replaceCard(state, action.id, { isEditing: false });
+
+	    case 'UPDATE_CARD':
+	      var _action$data = action.data;
+	      var front = _action$data.front;
+	      var back = _action$data.back;
+
+	      return replaceCard(state, action.data.id, { isEditing: false, front: front, back: back });
 
 	    default:
 	      return state;
@@ -33417,6 +33418,10 @@
 	  return { type: 'SAVE_CARD', id: id };
 	};
 
+	actions.updateCard = function (data) {
+	  return { type: 'UPDATE_CARD', data: data };
+	};
+
 	module.exports = actions;
 
 /***/ },
@@ -33488,9 +33493,13 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var EditModal = function EditModal(_ref) {
-	  var card = _ref.card;
+	  var front = _ref.front;
+	  var back = _ref.back;
 	  var isOpen = _ref.isOpen;
 	  var onToggle = _ref.onToggle;
+	  var changeFront = _ref.changeFront;
+	  var changeBack = _ref.changeBack;
+	  var updateCard = _ref.updateCard;
 
 	  return _react2.default.createElement(
 	    'div',
@@ -33514,7 +33523,7 @@
 	            { 'for': 'card_front' },
 	            'Card Front'
 	          ),
-	          _react2.default.createElement(_reactstrap.Input, { type: 'textarea', name: 'text', id: 'card_front', value: card.front })
+	          _react2.default.createElement(_reactstrap.Input, { type: 'textarea', onChange: changeFront, name: 'text', id: 'card_front', value: front })
 	        ),
 	        _react2.default.createElement(
 	          _reactstrap.FormGroup,
@@ -33524,7 +33533,7 @@
 	            { 'for': 'card_back' },
 	            'Card Back'
 	          ),
-	          _react2.default.createElement(_reactstrap.Input, { type: 'textarea', name: 'text', id: 'card_back', value: card.back })
+	          _react2.default.createElement(_reactstrap.Input, { type: 'textarea', onChange: changeBack, name: 'text', id: 'card_back', value: back })
 	        )
 	      ),
 	      _react2.default.createElement(
@@ -33532,7 +33541,7 @@
 	        null,
 	        _react2.default.createElement(
 	          _reactstrap.Button,
-	          { color: 'primary' },
+	          { color: 'primary', onClick: updateCard },
 	          'Save Changes'
 	        ),
 	        _react2.default.createElement(
@@ -33546,42 +33555,80 @@
 	};
 
 	EditModal.propTypes = {
-	  card: _react.PropTypes.object.isRequired,
+	  front: _react.PropTypes.string.isRequired,
+	  back: _react.PropTypes.string.isRequired,
 	  isOpen: _react.PropTypes.bool.isRequired,
 	  onToggle: _react.PropTypes.func.isRequired
 	};
 
-	var Card = function Card(_ref2) {
-	  var card = _ref2.card;
-	  var _onClick = _ref2.onClick;
-	  var _onToggle = _ref2.onToggle;
+	var Card = _react2.default.createClass({
+	  displayName: 'Card',
+	  getInitialState: function getInitialState() {
+	    var card = this.props.card;
 
-	  return _react2.default.createElement(
-	    'div',
-	    { className: 'col-sm-4 card-item' },
-	    _react2.default.createElement(
-	      'p',
-	      null,
-	      card.front
-	    ),
-	    _react2.default.createElement(
-	      'button',
-	      { onClick: function onClick() {
-	          return _onClick(card.id);
-	        }, type: 'button', className: 'btn btn-default' },
-	      'Edit'
-	    ),
-	    _react2.default.createElement(EditModal, { isOpen: card.isEditing, card: card, onToggle: function onToggle() {
-	        return _onToggle(card.id);
-	      } })
-	  );
-	};
+	    return {
+	      front: card.front,
+	      back: card.back
+	    };
+	  },
+	  changeFront: function changeFront(evt) {
+	    var newValue = evt.target.value;
+	    this.setState({
+	      front: newValue
+	    });
+	  },
+	  changeBack: function changeBack(evt) {
+	    var newValue = evt.target.value;
+	    this.setState({
+	      back: newValue
+	    });
+	  },
+	  updateCard: function updateCard() {
+	    var _state = this.state;
+	    var front = _state.front;
+	    var back = _state.back;
+	    var card = this.props.card;
 
-	Card.propTypes = {
-	  card: _react.PropTypes.object.isRequired,
-	  onClick: _react.PropTypes.func.isRequired,
-	  onToggle: _react.PropTypes.func.isRequired
-	};
+	    this.props.updateCard({ id: card.id, front: front, back: back });
+	  },
+	  render: function render() {
+	    var _props = this.props;
+	    var card = _props.card;
+	    var _onClick = _props.onClick;
+	    var _onToggle = _props.onToggle;
+	    var _state2 = this.state;
+	    var front = _state2.front;
+	    var back = _state2.back;
+
+
+	    return _react2.default.createElement(
+	      'div',
+	      { className: 'col-sm-4 card-item' },
+	      _react2.default.createElement(
+	        'p',
+	        null,
+	        card.front
+	      ),
+	      _react2.default.createElement(
+	        'button',
+	        { onClick: function onClick() {
+	            return _onClick(card.id);
+	          }, type: 'button', className: 'btn btn-default' },
+	        'Edit'
+	      ),
+	      _react2.default.createElement(EditModal, {
+	        isOpen: card.isEditing,
+	        changeFront: this.changeFront,
+	        changeBack: this.changeBack,
+	        front: front,
+	        back: back,
+	        updateCard: this.updateCard,
+	        onToggle: function onToggle() {
+	          return _onToggle(card.id);
+	        } })
+	    );
+	  }
+	});
 
 	function mapDispatchToProps(dispatch) {
 	  return {
@@ -33590,6 +33637,9 @@
 	    },
 	    onToggle: function onToggle(id) {
 	      return dispatch((0, _cardActions.saveCard)(id));
+	    },
+	    updateCard: function updateCard(data) {
+	      return dispatch((0, _cardActions.updateCard)(data));
 	    }
 	  };
 	}
