@@ -1,6 +1,4 @@
-import React, {PropTypes} from 'react';
-import {connect} from 'react-redux';
-import {editCard, saveCard, updateCard} from '../actions/cardActions.js';
+import React from 'react';
 import EditModal from './EditModal.jsx';
 
 const Card = React.createClass({
@@ -51,13 +49,6 @@ const Card = React.createClass({
   }  
 });
 
+export default Card;
 
-function mapDispatchToProps (dispatch) {
-  return { 
-    onClick     : (id) => dispatch( editCard(id) ),
-    onToggle    : (id) => dispatch( saveCard(id) ),
-    updateCard  : (data) => dispatch( updateCard(data) )
-  };
-}
 
-export default connect(null, mapDispatchToProps)(Card);

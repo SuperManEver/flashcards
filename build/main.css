@@ -387,9 +387,6 @@ body {
   .new-card-modal .btn-primary {
     margin-left: 10px; }
 
-.cards-container {
-  padding: 0 40px; }
-
 .card-item {
   width: 32%;
   background: rgba(156, 188, 217, 0.2);
